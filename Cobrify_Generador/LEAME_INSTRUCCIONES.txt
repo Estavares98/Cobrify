@@ -1,0 +1,21 @@
+===============================================================
+       COBRIFY - GENERADOR DE RECIBOS (100% OFFLINE)
+===============================================================
+
+¡Gracias por usar COBRIFY!
+
+RECURSOS DE DISEÑO INCLUIDOS:
+- icon_2.ico : Icono de la aplicación y favicon para el navegador.
+- logo.jpg   : Marca de agua sutil en la vista previa del recibo y en la imagen exportada.
+
+FUNCIONES DE COMPARTIR SIN DESCARGAR ARCHIVOS:
+1. "📲 Compartir por WhatsApp":
+   - En Android y móviles abre el menú nativo para enviar directamente
+     el recibo a WhatsApp sin llenar el celular de archivos descargados.
+2. "📋 Copiar Imagen Recibo":
+   - Copia la imagen al portapapeles. Solo presiona "Pegar" (Ctrl + V)
+     en WhatsApp Web o en cualquier chat.
+3. "🖨️ Imprimir":
+   - Formato ajustado para impresión limpia en tickets / papel.
+
+===============================================================

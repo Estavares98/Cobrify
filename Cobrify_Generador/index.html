@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COBRIFY - Generador de Recibos</title>
+    <link rel="icon" href="icon_2.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="icon_2.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary: #1e293b;
+            --primary-hover: #0f172a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #16a34a;
+            --success-hover: #15803d;
+            --whatsapp: #25d366;
+            --whatsapp-hover: #1da851;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .header-title p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Form Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .calculated-box {
+            background-color: #f1f5f9;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Action Buttons */
+        .actions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-whatsapp:hover { background: var(--whatsapp-hover); }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-hover); }
+
+        .btn-dark { background: var(--primary); color: white; }
+        .btn-dark:hover { background: var(--primary-hover); }
+
+        .btn-outline { background: transparent; border: 1.5px solid #cbd5e1; color: #475569; }
+        .btn-outline:hover { background: #e2e8f0; color: #0f172a; }
+
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+
+        /* Error Banner & Notifications */
+        .error-banner {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 9999;
+        }
+
+        /* Preview Container */
+        .receipt-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        /* Exact Ticket Layout based on Reference Image */
+        .receipt-ticket {
+            width: 800px;
+            height: 310px;
+            background: #ffffff;
+            border: 2px solid #000000;
+            padding: 16px 20px;
+            box-sizing: border-box;
+            display: flex;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000000;
+            position: relative;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Marca de Agua en la vista previa del recibo */
+        .receipt-ticket::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            background-image: url('logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .receipt-left {
+            flex: 1.15;
+            padding-right: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .receipt-divider {
+            width: 0;
+            border-left: 2.5px dashed #000000;
+            margin: 0 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .receipt-right {
+            flex: 0.85;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Receipt Top Headers */
+        .left-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .brand-title {
+            font-weight: 900;
+            font-size: 1.35rem;
+            letter-spacing: 1px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .badge-recibo {
+            background: #000000;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 3px 10px;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        .receipt-date-top {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .dashed-line-horizontal {
+            border-bottom: 1.5px dashed #000000;
+            margin-bottom: 12px;
+        }
+
+        /* Receipt Fields */
+        .ticket-row {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .ticket-row .val {
+            font-weight: 400;
+            margin-left: 6px;
+        }
+
+        .line-above-saldo {
+            border-top: 1.5px solid #000000;
+            margin: 6px 0;
+        }
+
+        .line-grey-bottom {
+            border-top: 1.5px solid #cccccc;
+            margin: 6px 0;
+        }
+
+        .left-footer {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Right Side Details */
+        .right-header {
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .right-header h3 {
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .right-header p {
+            font-size: 0.8rem;
+            color: #555555;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .signature-line {
+            border-top: 1.5px solid #000000;
+            margin-top: 25px;
+            text-align: center;
+            padding-top: 4px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .header-title, .card, .actions-grid, .error-banner, .toast-msg {
+                display: none !important;
+            }
+
+            .main-container {
+                width: 100%;
+                max-width: none;
+            }
+
+            .receipt-wrapper {
+                padding: 0;
+                margin: 0;
+                display: block;
+            }
+
+            .receipt-ticket {
+                width: 100%;
+                max-width: 13cm;
+                height: 5cm;
+                margin: 0 auto;
+                border: 2px solid #000;
+                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">
+        <div class="header-brand">
+            <img src="icon_2.ico" alt="COBRIFY Icon" class="header-icon">
+            <h1>COBRIFY - GENERADOR DE RECIBOS</h1>
+        </div>
+        <p>Aplicación local e independiente de control de abonos</p>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Formulario de ingreso manual -->
+        <div class="card">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="cliente">Nombre del Cliente</label>
+                    <input type="text" id="cliente" class="form-control" placeholder="Ej: Ivan Parqueo" value="Ivan Parqueo">
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha del Recibo</label>
+                    <input type="date" id="fecha" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="cobrador">Nombre del Cobrador</label>
+                    <input type="text" id="cobrador" class="form-control" placeholder="Ej: Esteban" value="Esteban">
+                </div>
+
+                <div class="form-group">
+                    <label for="saldoAnterior">Saldo Anterior ($ COP)</label>
+                    <input type="number" id="saldoAnterior" class="form-control" placeholder="110000" value="110000" min="0" step="1000">
+                </div>
+
+                <div class="form-group">
+                    <label for="abono">Valor del Abono ($ COP)</label>
+                    <input type="number" id="abono" class="form-control" placeholder="12000" value="12000" min="0" step="1000">
+                </div>
+
+                <div class="form-group">
+                    <label for="saldoActual">Saldo Actual (Calculado)</label>
+                    <input type="text" id="saldoActual" class="form-control calculated-box" readonly value="$98.000">
+                </div>
+
+                <div class="form-group">
+                    <label for="medioPago">Medio de Pago</label>
+                    <select id="medioPago" class="form-control">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="errorBanner" class="error-banner"></div>
+
+            <div class="actions-grid">
+                <button type="button" class="btn btn-whatsapp" onclick="compartirWhatsAppDirecto()">
+                    📲 Compartir por WhatsApp (Directo sin guardar)
+                </button>
+                <button type="button" class="btn btn-primary" onclick="copiarImagenPortapapeles()">
+                    📋 Copiar Imagen Recibo
+                </button>
+                <button type="button" class="btn btn-dark" onclick="imprimirRecibo()">
+                    🖨️ Imprimir
+                </button>
+                <button type="button" class="btn btn-outline" onclick="nuevoRecibo()">
+                    📄 Nuevo Recibo
+                </button>
+                <button type="button" class="btn btn-danger" onclick="limpiarCampos()">
+                    🗑️ Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Vista previa del Recibo de Cobrify -->
+        <div class="receipt-wrapper">
+            <div class="receipt-ticket" id="receiptTicket">
+                <!-- Izquierda: Recibo Cliente -->
+                <div class="receipt-left">
+                    <div>
+                        <div class="left-header">
+                            <span class="brand-title">COBRIFY</span>
+                            <span class="badge-recibo">RECIBO CLIENTE</span>
+                            <span class="receipt-date-top" id="lblFechaIzq">23/11/2026</span>
+                        </div>
+                        <div class="dashed-line-horizontal"></div>
+                        
+                        <div class="ticket-row">Cliente:<span class="val" id="lblClienteIzq">Ivan Parqueo</span></div>
+                        <div class="ticket-row">Saldo Ant:<span class="val" id="lblSaldoAntIzq">$110.000</span></div>
+                        <div class="ticket-row">Abono:<span class="val" id="lblAbonoIzq">-$12.000</span></div>
+                        
+                        <div class="line-above-saldo"></div>
+                        
+                        <div class="ticket-row">SALDO ACT:<span class="val" id="lblSaldoActIzq">$98.000</span></div>
+                        <div class="ticket-row">Medio:<span class="val" id="lblMedioIzq">Efectivo</span></div>
+                        <div class="line-grey-bottom"></div>
+                    </div>
+                    
+                    <div class="left-footer">
+                        Cob: <span id="lblCobradorIzq">Esteban</span> — ¡Gracias por su pago!
+                    </div>
+                </div>
+
+                <!-- Línea Divisoria -->
+                <div class="receipt-divider"></div>
+
+                <!-- Derecha: Desprendible Control Cobrador -->
+                <div class="receipt-right">
+                    <div>
+                        <div class="right-header">
+                            <h3>DESPRENDIBLE</h3>
+                            <p>CONTROL COBRADOR</p>
+                        </div>
+                        <div class="dashed-line-horizontal"></div>
+
+                        <div class="ticket-row">Cliente:<span class="val" id="lblClienteDer">Ivan Parqueo</span></div>
+                        <div class="ticket-row">Abono:<span class="val" id="lblAbonoDer">$12.000</span></div>
+                        <div class="ticket-row">Saldo Rest:<span class="val" id="lblSaldoRestDer">$98.000</span></div>
+                        <div class="ticket-row">Fecha:<span class="val" id="lblFechaDer">23/11/2026</span></div>
+                    </div>
+
+                    <div class="signature-line">
+                        Firma Cliente
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <!-- Hidden Canvas for Offline High-Quality Image Export & Sharing -->
+    <canvas id="exportCanvas" style="display:none;"></canvas>
+
+    <script>
+        // Cargar imagen del logo para marca de agua en canvas
+        const logoWatermark = new Image();
+        logoWatermark.src = 'logo.png';
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        // Formato Moneda COP en español Colombia
+        function formatCOP(val) {
+            const num = Math.round(val || 0);
+            return '$' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Obtener fecha actual en formato DD/MM/YYYY
+        function getFechaHoyFormatted() {
+            const hoy = new Date();
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const anio = hoy.getFullYear();
+            return `${dia}/${mes}/${anio}`;
+        }
+
+        // Obtener fecha en ISO (YYYY-MM-DD) para el input date
+        function getFechaISO() {
+            const hoy = new Date();
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const anio = hoy.getFullYear();
+            return `${anio}-${mes}-${dia}`;
+        }
+
+        // Formatear string ISO YYYY-MM-DD a DD/MM/YYYY
+        function formatFechaDisplay(fechaIso) {
+            if (!fechaIso) return getFechaHoyFormatted();
+            const parts = fechaIso.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return fechaIso;
+        }
+
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputFecha = document.getElementById('fecha');
+            if (!inputFecha.value) {
+                inputFecha.value = getFechaISO();
+            }
+
+            // Escuchar cambios en los inputs para calculo instantaneo
+            document.getElementById('saldoAnterior').addEventListener('input', calcularYSincronizar);
+            document.getElementById('abono').addEventListener('input', calcularYSincronizar);
+            document.getElementById('cliente').addEventListener('input', sincronizarVista);
+            document.getElementById('cobrador').addEventListener('input', sincronizarVista);
+            document.getElementById('fecha').addEventListener('change', sincronizarVista);
+            document.getElementById('medioPago').addEventListener('change', sincronizarVista);
+
+            calcularYSincronizar();
+        });
+
+        // Calculo del Saldo Actual
+        function calcularYSincronizar() {
+            const errorBanner = document.getElementById('errorBanner');
+            errorBanner.style.display = 'none';
+
+            const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
+            const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
+
+            if (abonoVal > saldoAntVal) {
+                errorBanner.innerText = '⚠️ El valor del abono no puede ser superior al saldo anterior.';
+                errorBanner.style.display = 'block';
+            }
+
+            const saldoActVal = Math.max(0, saldoAntVal - abonoVal);
+            document.getElementById('saldoActual').value = formatCOP(saldoActVal);
+
+            sincronizarVista();
+        }
+
+        // Sincronizar todos los valores con el recibo visual
+        function sincronizarVista() {
+            const cliente = document.getElementById('cliente').value || '---';
+            const cobrador = document.getElementById('cobrador').value || '---';
+            const fechaIso = document.getElementById('fecha').value;
+            const fechaFmt = formatFechaDisplay(fechaIso);
+            const medio = document.getElementById('medioPago').value;
+
+            const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
+            const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
+            const saldoActVal = Math.max(0, saldoAntVal - abonoVal);
+
+            // Izquierda
+            document.getElementById('lblFechaIzq').innerText = fechaFmt;
+            document.getElementById('lblClienteIzq').innerText = cliente;
+            document.getElementById('lblSaldoAntIzq').innerText = formatCOP(saldoAntVal);
+            document.getElementById('lblAbonoIzq').innerText = '-' + formatCOP(abonoVal);
+            document.getElementById('lblSaldoActIzq').innerText = formatCOP(saldoActVal);
+            document.getElementById('lblMedioIzq').innerText = medio;
+            document.getElementById('lblCobradorIzq').innerText = cobrador;
+
+            // Derecha
+            document.getElementById('lblClienteDer').innerText = cliente;
+            document.getElementById('lblAbonoDer').innerText = formatCOP(abonoVal);
+            document.getElementById('lblSaldoRestDer').innerText = formatCOP(saldoActVal);
+            document.getElementById('lblFechaDer').innerText = fechaFmt;
+        }
+
+        function generarRecibo() {
+            const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
+            const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
+
+            if (abonoVal > saldoAntVal) {
+                alert('Atención: El abono es mayor al saldo anterior. Por favor rectifique.');
+                return;
+            }
+
+            sincronizarVista();
+        }
+
+        function imprimirRecibo() {
+            generarRecibo();
+            window.print();
+        }
+
+        function nuevoRecibo() {
+            document.getElementById('cliente').value = '';
+            document.getElementById('saldoAnterior').value = '';
+            document.getElementById('abono').value = '';
+            document.getElementById('saldoActual').value = '$0';
+            document.getElementById('errorBanner').style.display = 'none';
+            document.getElementById('cliente').focus();
+            sincronizarVista();
+        }
+
+        function limpiarCampos() {
+            nuevoRecibo();
+        }
+
+        // Renderizar el recibo en Canvas
+        function renderizarCanvas(callback) {
+            generarRecibo();
+
+            const canvas = document.getElementById('exportCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = 1600;
+            canvas.height = 620;
+
+            const drawAll = () => {
+                // Background
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Marca de Agua (Watermark Image)
+                if (logoWatermark.complete && logoWatermark.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.08;
+                    const wSize = 480;
+                    ctx.drawImage(logoWatermark, (canvas.width - wSize) / 2, (canvas.height - wSize) / 2, wSize, wSize);
+                    ctx.restore();
+                }
+
+                // Border
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+                // Fonts
+                const monoFont = "'Courier New', Courier, monospace";
+
+                // Values
+                const cliente = document.getElementById('cliente').value || '---';
+                const cobrador = document.getElementById('cobrador').value || '---';
+                const fechaFmt = formatFechaDisplay(document.getElementById('fecha').value);
+                const medio = document.getElementById('medioPago').value;
+                const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
+                const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
+                const saldoActVal = Math.max(0, saldoAntVal - abonoVal);
+
+                // Left Section (x: 40 to 860)
+                ctx.fillStyle = "#000000";
+                ctx.font = `900 34px ${monoFont}`;
+                ctx.textAlign = "left";
+                ctx.fillText("COBRIFY", 40, 70);
+
+                // Black Badge RECIBO CLIENTE
+                ctx.fillRect(260, 36, 300, 44);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = `700 24px ${monoFont}`;
+                ctx.textAlign = "center";
+                ctx.fillText("RECIBO CLIENTE", 410, 66);
+
+                // Date Left
+                ctx.fillStyle = "#000000";
+                ctx.font = `700 28px ${monoFont}`;
+                ctx.textAlign = "right";
+                ctx.fillText(fechaFmt, 860, 70);
+
+                // Horizontal Dashed Line Left
+                ctx.beginPath();
+                ctx.setLineDash([8, 8]);
+                ctx.lineWidth = 3;
+                ctx.moveTo(40, 95);
+                ctx.lineTo(860, 95);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Fields Left
+                ctx.textAlign = "left";
+                ctx.font = `700 28px ${monoFont}`;
+                
+                let y = 155;
+                ctx.fillText("Cliente: " + cliente, 40, y);
+                
+                y += 55;
+                ctx.fillText("Saldo Ant: " + formatCOP(saldoAntVal), 40, y);
+                
+                y += 55;
+                ctx.fillText("Abono: -" + formatCOP(abonoVal), 40, y);
+
+                // Line above Saldo Act
+                y += 20;
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.moveTo(40, y);
+                ctx.lineTo(860, y);
+                ctx.stroke();
+
+                y += 55;
+                ctx.fillText("SALDO ACT: " + formatCOP(saldoActVal), 40, y);
+
+                y += 55;
+                ctx.fillText("Medio: " + medio, 40, y);
+
+                // Line grey bottom
+                y += 20;
+                ctx.strokeStyle = "#cccccc";
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.moveTo(40, y);
+                ctx.lineTo(860, y);
+                ctx.stroke();
+                ctx.strokeStyle = "#000000";
+
+                // Footer Left
+                y += 45;
+                ctx.font = `600 24px ${monoFont}`;
+                ctx.textAlign = "center";
+                ctx.fillText(`Cob: ${cobrador} — ¡Gracias por su pago!`, 450, y);
+
+                // Vertical Divider Dashed Line (x = 900)
+                ctx.beginPath();
+                ctx.setLineDash([10, 10]);
+                ctx.lineWidth = 5;
+                ctx.moveTo(900, 20);
+                ctx.lineTo(900, 600);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Right Section (x: 940 to 1560)
+                ctx.textAlign = "center";
+                ctx.font = `900 30px ${monoFont}`;
+                ctx.fillText("DESPRENDIBLE", 1250, 60);
+
+                ctx.fillStyle = "#666666";
+                ctx.font = `600 20px ${monoFont}`;
+                ctx.fillText("CONTROL COBRADOR", 1250, 88);
+
+                // Horizontal Dashed Line Right
+                ctx.strokeStyle = "#000000";
+                ctx.beginPath();
+                ctx.setLineDash([8, 8]);
+                ctx.lineWidth = 3;
+                ctx.moveTo(940, 105);
+                ctx.lineTo(1560, 105);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Fields Right
+                ctx.fillStyle = "#000000";
+                ctx.textAlign = "left";
+                ctx.font = `700 28px ${monoFont}`;
+
+                y = 175;
+                ctx.fillText("Cliente: " + cliente, 940, y);
+                
+                y += 55;
+                ctx.fillText("Abono: " + formatCOP(abonoVal), 940, y);
+                
+                y += 55;
+                ctx.fillText("Saldo Rest: " + formatCOP(saldoActVal), 940, y);
+                
+                y += 55;
+                ctx.fillText("Fecha: " + fechaFmt, 940, y);
+
+                // Signature line
+                y = 510;
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.moveTo(940, y);
+                ctx.lineTo(1560, y);
+                ctx.stroke();
+
+                ctx.textAlign = "center";
+                ctx.font = `700 24px ${monoFont}`;
+                ctx.fillText("Firma Cliente", 1250, y + 40);
+
+                canvas.toBlob(blob => {
+                    callback(blob, cliente);
+                }, 'image/png');
+            };
+
+            if (logoWatermark.complete) {
+                drawAll();
+            } else {
+                logoWatermark.onload = drawAll;
+                logoWatermark.onerror = drawAll;
+            }
+        }
+
+        // COMPARTIR POR WHATSAPP SIN DESCARGAR ARCHIVO AL ALMACENAMIENTO PERMANENTE
+        function compartirWhatsAppDirecto() {
+            renderizarCanvas((blob, cliente) => {
+                const filenameClient = cliente.replace(/[^a-zA-Z0-9]/g, '_');
+                const file = new File([blob], `Recibo_${filenameClient}.png`, { type: 'image/png' });
+
+                // Probar si el navegador soporta compartir archivos nativos (Android / Chrome / Edge)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        title: 'Recibo COBRIFY',
+                        text: `Recibo de abono de ${cliente}`,
+                        files: [file]
+                    }).catch(err => {
+                        console.log('Compartir cancelado o no soportado:', err);
+                    });
+                } else {
+                    // Si es PC o no soporta navigator.share, copiamos al portapapeles y avisamos
+                    copiarImagenPortapapeles(() => {
+                        showToast('📋 Imagen copiada. Abre WhatsApp y presiona Pegar (Ctrl + V).');
+                    });
+                }
+            });
+        }
+
+        // COPIAR LA IMAGEN DIRECTAMENTE AL PORTAPAPELES (Para Ctrl+V o Pegar en WhatsApp)
+        function copiarImagenPortapapeles(onSuccess) {
+            renderizarCanvas((blob) => {
+                try {
+                    const item = new ClipboardItem({ 'image/png': blob });
+                    navigator.clipboard.write([item]).then(() => {
+                        showToast('✅ Imagen copiada al portapapeles. Solo da "Pegar" (Ctrl + V) en WhatsApp.');
+                        if (onSuccess) onSuccess();
+                    }).catch(err => {
+                        showToast('⚠️ Tu navegador no permite copiar imágenes directamente. Usa el menú de compartir.');
+                    });
+                } catch (e) {
+                    showToast('⚠️ Copia no soportada en este navegador.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
