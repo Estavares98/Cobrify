@@ -90,6 +90,24 @@
             border: 1px solid var(--border);
         }
 
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -153,6 +171,12 @@
             transition: all 0.2s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            border-radius: 6px;
         }
 
         .btn-primary { background: var(--accent); color: white; }
@@ -366,6 +390,50 @@
             font-weight: 700;
         }
 
+        /* Data Storage Table Section */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .data-table th, .data-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge-saldo {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .search-box {
+            max-width: 300px;
+        }
+
         /* Print Media Styles */
         @media print {
             body {
@@ -374,7 +442,7 @@
                 margin: 0;
             }
 
-            .header-title, .card, .actions-grid, .error-banner, .toast-msg {
+            .header-title, .card, .actions-grid, .error-banner, .toast-msg, .storage-section {
                 display: none !important;
             }
 
@@ -409,17 +477,23 @@
             <img src="icon_2.ico" alt="COBRIFY Icon" class="header-icon">
             <h1>COBRIFY - GENERADOR DE RECIBOS</h1>
         </div>
-        <p>Aplicación local e independiente de control de abonos</p>
+        <p>Aplicación local con almacenamiento de clientes y saldos en el dispositivo</p>
     </div>
 
     <div class="main-container">
 
         <!-- Formulario de ingreso manual -->
         <div class="card">
+            <div class="card-header">
+                <span class="card-title">📝 Datos del Recibo / Abono</span>
+                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600;">🟢 Almacenamiento Local Activo</span>
+            </div>
+            
             <div class="form-grid">
                 <div class="form-group">
                     <label for="cliente">Nombre del Cliente</label>
-                    <input type="text" id="cliente" class="form-control" placeholder="Ej: Ivan Parqueo" value="Ivan Parqueo">
+                    <input type="text" id="cliente" class="form-control" placeholder="Escribe o selecciona cliente" list="listaClientes" autocomplete="off">
+                    <datalist id="listaClientes"></datalist>
                 </div>
 
                 <div class="form-group">
@@ -459,8 +533,11 @@
             <div id="errorBanner" class="error-banner"></div>
 
             <div class="actions-grid">
+                <button type="button" class="btn btn-success" onclick="guardarYRegistrarRecibo(true)">
+                    💾 Guardar en Dispositivo
+                </button>
                 <button type="button" class="btn btn-whatsapp" onclick="compartirWhatsAppDirecto()">
-                    📲 Compartir por WhatsApp (Directo sin guardar)
+                    📲 Compartir por WhatsApp
                 </button>
                 <button type="button" class="btn btn-primary" onclick="copiarImagenPortapapeles()">
                     📋 Copiar Imagen Recibo
@@ -531,6 +608,44 @@
             </div>
         </div>
 
+        <!-- Sección de Clientes y Saldos Guardados Localmente -->
+        <div class="card storage-section">
+            <div class="card-header">
+                <span class="card-title">👥 Clientes y Saldos Guardados</span>
+                <input type="text" id="buscarCliente" class="form-control search-box" placeholder="🔎 Buscar cliente..." oninput="renderizarTablaClientes()">
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Saldo Pendiente</th>
+                            <th>Último Abono</th>
+                            <th>Última Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaClientesBody">
+                        <!-- Generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="exportarCopiaSeguridad()">
+                    📥 Exportar Copia (JSON)
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">
+                    📤 Importar Datos
+                </button>
+                <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importarCopiaSeguridad(event)">
+                <button type="button" class="btn btn-danger btn-sm" onclick="vaciarTodoElAlmacenamiento()">
+                    ⚠️ Borrar Todo
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <div id="toastMsg" class="toast-msg"></div>
@@ -542,6 +657,22 @@
         // Cargar imagen del logo para marca de agua en canvas
         const logoWatermark = new Image();
         logoWatermark.src = 'logo.jpg';
+
+        // Estructuras de Almacenamiento Local
+        // cobrify_clientes: { "Nombre": { saldoActual: 98000, ultimoAbono: 12000, ultimaFecha: "2026-11-23" } }
+        function getClientesGuardados() {
+            try {
+                return JSON.parse(localStorage.getItem('cobrify_clientes')) || {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function setClientesGuardados(data) {
+            localStorage.setItem('cobrify_clientes', JSON.stringify(data));
+            renderizarDatalistClientes();
+            renderizarTablaClientes();
+        }
 
         function showToast(msg) {
             const toast = document.getElementById('toastMsg');
@@ -596,13 +727,35 @@
             // Escuchar cambios en los inputs para calculo instantaneo
             document.getElementById('saldoAnterior').addEventListener('input', calcularYSincronizar);
             document.getElementById('abono').addEventListener('input', calcularYSincronizar);
-            document.getElementById('cliente').addEventListener('input', sincronizarVista);
+            document.getElementById('cliente').addEventListener('input', onClienteInputChange);
             document.getElementById('cobrador').addEventListener('input', sincronizarVista);
             document.getElementById('fecha').addEventListener('change', sincronizarVista);
             document.getElementById('medioPago').addEventListener('change', sincronizarVista);
 
-            calcularYSincronizar();
+            renderizarDatalistClientes();
+            renderizarTablaClientes();
+
+            // Si hay clientes guardados, seleccionar por defecto el primero o Ivan Parqueo
+            const clientes = getClientesGuardados();
+            if (Object.keys(clientes).length > 0 && !document.getElementById('cliente').value) {
+                const primerNombre = Object.keys(clientes)[0];
+                cargarClienteEnFormulario(primerNombre);
+            } else {
+                calcularYSincronizar();
+            }
         });
+
+        // Evento cuando cambia el nombre del cliente en el input
+        function onClienteInputChange() {
+            const nombre = document.getElementById('cliente').value.trim();
+            const clientes = getClientesGuardados();
+
+            // Si el cliente existe guardado, autocompletar su saldo anterior
+            if (clientes[nombre]) {
+                document.getElementById('saldoAnterior').value = clientes[nombre].saldoActual;
+            }
+            calcularYSincronizar();
+        }
 
         // Calculo del Saldo Actual
         function calcularYSincronizar() {
@@ -651,6 +804,36 @@
             document.getElementById('lblFechaDer').innerText = fechaFmt;
         }
 
+        // Guardar automáticamente la transacción y actualizar el saldo del cliente
+        function guardarYRegistrarRecibo(mostrarNotificacion = false) {
+            const cliente = document.getElementById('cliente').value.trim();
+            if (!cliente) {
+                if (mostrarNotificacion) showToast('⚠️ Por favor ingresa el nombre del cliente.');
+                return false;
+            }
+
+            const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
+            const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
+            const saldoActVal = Math.max(0, saldoAntVal - abonoVal);
+            const fechaIso = document.getElementById('fecha').value || getFechaISO();
+
+            const clientes = getClientesGuardados();
+            clientes[cliente] = {
+                saldoActual: saldoActVal,
+                ultimoAbono: abonoVal,
+                ultimaFecha: fechaIso,
+                cobrador: document.getElementById('cobrador').value || ''
+            };
+
+            setClientesGuardados(clientes);
+
+            if (mostrarNotificacion) {
+                showToast(`✅ Recibo guardado. Nuevo saldo de ${cliente}: ${formatCOP(saldoActVal)}`);
+            }
+
+            return true;
+        }
+
         function generarRecibo() {
             const saldoAntVal = parseFloat(document.getElementById('saldoAnterior').value) || 0;
             const abonoVal = parseFloat(document.getElementById('abono').value) || 0;
@@ -661,6 +844,7 @@
             }
 
             sincronizarVista();
+            guardarYRegistrarRecibo(false);
         }
 
         function imprimirRecibo() {
@@ -680,6 +864,206 @@
 
         function limpiarCampos() {
             nuevoRecibo();
+        }
+
+        // Renderizar Datalist para Autocompletar
+        function renderizarDatalistClientes() {
+            const datalist = document.getElementById('listaClientes');
+            datalist.innerHTML = '';
+            const clientes = getClientesGuardados();
+            for (let name in clientes) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.label = `${name} (Saldo: ${formatCOP(clientes[name].saldoActual)})`;
+                datalist.appendChild(opt);
+            }
+        }
+
+        // Renderizar Tabla de Clientes Guardados
+        function renderizarTablaClientes() {
+            const tbody = document.getElementById('tablaClientesBody');
+            tbody.innerHTML = '';
+            const clientes = getClientesGuardados();
+            const busqueda = (document.getElementById('buscarCliente').value || '').toLowerCase();
+
+            const nombres = Object.keys(clientes).filter(n => n.toLowerCase().includes(busqueda));
+
+            if (nombres.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding: 20px;">No hay clientes guardados aún.</td></tr>`;
+                return;
+            }
+
+            nombres.forEach(nombre => {
+                const item = clientes[nombre];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${nombre}</strong></td>
+                    <td><span class="badge-saldo">${formatCOP(item.saldoActual)}</span></td>
+                    <td>${formatCOP(item.ultimoAbono)}</td>
+                    <td>${formatFechaDisplay(item.ultimaFecha)}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="cargarClienteEnFormulario('${nombre.replace(/'/g, "\'")}')">Cargar</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarClienteGuardado('${nombre.replace(/'/g, "\'")}')">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cargarClienteEnFormulario(nombre) {
+            const clientes = getClientesGuardados();
+            if (clientes[nombre]) {
+                document.getElementById('cliente').value = nombre;
+                document.getElementById('saldoAnterior').value = clientes[nombre].saldoActual;
+                document.getElementById('abono').value = '';
+                if (clientes[nombre].cobrador) {
+                    document.getElementById('cobrador').value = clientes[nombre].cobrador;
+                }
+                calcularYSincronizar();
+                showToast(`📋 Cliente "${nombre}" cargado con saldo de ${formatCOP(clientes[nombre].saldoActual)}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function eliminarClienteGuardado(nombre) {
+            if (confirm(`¿Estás seguro de eliminar a "${nombre}" de la base de datos local?`)) {
+                const clientes = getClientesGuardados();
+                delete clientes[nombre];
+                setClientesGuardados(clientes);
+                showToast(`🗑️ Cliente "${nombre}" eliminado.`);
+            }
+        }
+
+        function vaciarTodoElAlmacenamiento() {
+            if (confirm('⚠️ ¿Deseas borrar TODOS los clientes y saldos guardados localmente? Esta acción no se puede deshacer.')) {
+                localStorage.removeItem('cobrify_clientes');
+                renderizarDatalistClientes();
+                renderizarTablaClientes();
+                showToast('🧹 Base de datos borrada por completo.');
+            }
+        }
+
+        // Respaldos JSON
+        function exportarCopiaSeguridad() {
+            const clientes = getClientesGuardados();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(clientes, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Cobrify_Respaldos_${getFechaISO()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Importar datos en formato JSON, CSV o SQL
+        function importarCopiaSeguridad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const fileName = file.name.toLowerCase();
+                let clientesNuevos = {};
+                let count = 0;
+
+                try {
+                    if (fileName.endsWith('.json') || (text.trim().startsWith('{') && text.trim().endsWith('}'))) {
+                        const data = JSON.parse(text);
+                        if (typeof data === 'object' && data !== null) {
+                            clientesNuevos = data;
+                            count = Object.keys(clientesNuevos).length;
+                        }
+                    } else if (fileName.endsWith('.sql') || text.toUpperCase().includes('INSERT INTO') || text.toUpperCase().includes('VALUES')) {
+                        clientesNuevos = parseSQLImport(text);
+                        count = Object.keys(clientesNuevos).length;
+                    } else {
+                        clientesNuevos = parseCSVImport(text);
+                        count = Object.keys(clientesNuevos).length;
+                    }
+
+                    if (count > 0) {
+                        const clientesActuales = getClientesGuardados();
+                        const combinado = { ...clientesActuales, ...clientesNuevos };
+                        setClientesGuardados(combinado);
+                        showToast(`✅ ${count} cliente(s) e historial importado(s) correctamente.`);
+                    } else {
+                        alert('No se pudieron extraer registros de clientes válidos del archivo. Revisa que contenga columnas o tuplas con Nombre y Saldo.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error al procesar el archivo. Formatos soportados: CSV, SQL (.sql / .txt) y JSON.');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // Parseador de archivos CSV / TXT delimitados por comas, punto y coma o tabulaciones
+        function parseCSVImport(text) {
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) return {};
+
+            const result = {};
+            let separator = ',';
+            if (lines[0].includes(';')) separator = ';';
+            else if (lines[0].includes('\t')) separator = '\t';
+
+            const firstLine = lines[0].toLowerCase();
+            let hasHeader = firstLine.includes('cliente') || firstLine.includes('nombre') || firstLine.includes('name') || firstLine.includes('saldo') || firstLine.includes('abono');
+            let startIndex = hasHeader ? 1 : 0;
+
+            for (let i = startIndex; i < lines.length; i++) {
+                const cols = lines[i].split(separator).map(c => c.replace(/^["']|["']$/g, '').trim());
+                if (cols.length >= 1 && cols[0]) {
+                    const nombre = cols[0];
+                    const saldo = cols.length > 1 ? (parseFloat(cols[1].replace(/[^0-9.]/g, '')) || 0) : 0;
+                    const abono = cols.length > 2 ? (parseFloat(cols[2].replace(/[^0-9.]/g, '')) || 0) : 0;
+                    const fecha = cols.length > 3 && cols[3] ? cols[3] : getFechaISO();
+
+                    result[nombre] = {
+                        saldoActual: saldo,
+                        ultimoAbono: abono,
+                        ultimaFecha: fecha,
+                        cobrador: 'Importado CSV'
+                    };
+                }
+            }
+            return result;
+        }
+
+        // Parseador de volcados de base de datos SQL (INSERT INTO / VALUES)
+        function parseSQLImport(text) {
+            const result = {};
+            const tupleRegex = /\(([^)]+)\)/g;
+            let match;
+
+            while ((match = tupleRegex.exec(text)) !== null) {
+                const rawTuple = match[1];
+                const parts = rawTuple.split(',').map(p => p.replace(/^['"\s]+|['"\s]+$/g, '').trim());
+
+                if (parts.length >= 1 && parts[0]) {
+                    const nombre = parts[0];
+                    const firstWord = nombre.toUpperCase();
+                    if (['INSERT', 'VALUES', 'CREATE', 'TABLE', 'DROP', 'ALTER', 'NULL', 'TRUE', 'FALSE'].includes(firstWord)) {
+                        continue;
+                    }
+
+                    const saldo = parts.length > 1 ? (parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0) : 0;
+                    const abono = parts.length > 2 ? (parseFloat(parts[2].replace(/[^0-9.]/g, '')) || 0) : 0;
+                    const fecha = parts.length > 3 && parts[3] ? parts[3] : getFechaISO();
+
+                    if (isNaN(nombre) && nombre.length > 1) {
+                        result[nombre] = {
+                            saldoActual: saldo,
+                            ultimoAbono: abono,
+                            ultimaFecha: fecha,
+                            cobrador: 'Importado SQL'
+                        };
+                    }
+                }
+            }
+            return result;
         }
 
         // Renderizar el recibo en Canvas
